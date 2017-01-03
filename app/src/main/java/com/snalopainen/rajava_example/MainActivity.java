@@ -13,6 +13,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
@@ -45,8 +57,9 @@ public class MainActivity extends AppCompatActivity {
         // displayImageDrawable();
         //schedulePrintStringArraysTask();
         //schedulerDisplayImageDrawable();
-       // mapStudentsToNames();
-        mapStudentsToScores();
+        // mapStudentsToNames();
+        // mapStudentsToScores();
+        buildRetrofitRequestInstanceWithoutConvert();
     }
 
     @Override
@@ -208,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
     private void mapStudentsToNames() {
         Students[] students = {new Students("tom", new String[]{"100", "200", "97"}),
                 new Students("mike", new String[]{"60", "60", "60"}),
-                new Students("zhangsan", new String[]{"50","50", "50"})};
+                new Students("zhangsan", new String[]{"50", "50", "50"})};
 
 
         Observable.from(students).map(new Func1<Students, String>() {
@@ -233,10 +246,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void mapStudentsToScores(){
+
+    private void mapStudentsToScores() {
         Students[] students = {new Students("tom", new String[]{"100", "200", "97"}),
                 new Students("mike", new String[]{"60", "60", "60"}),
-                new Students("zhangsan", new String[]{"50","50", "50"})};
+                new Students("zhangsan", new String[]{"50", "50", "50"})};
 
 
         Observable.from(students).flatMap(new Func1<Students, Observable<String>>() {
@@ -262,4 +276,44 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 第二步,创建retrofit实例
+     */
+    private Retrofit buildRetrofitInstance() {
+        //@GET("repos/{owner}/{repo}/contributors")
+        return new Retrofit.Builder().baseUrl("https://api.github.com/").build();
+    }
+
+    /**
+     * 第三步,根据第二步创建的retroit实例去创建一个retrofit请求实例
+     */
+    private void buildRetrofitRequestInstanceWithoutConvert(/*String u, String r*/) {
+
+        GithubService repo = buildRetrofitInstance().create(GithubService.class);
+        Call<ResponseBody> call = repo.contributorBySimpleGetCall("square", "retrofit");
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d(TAG, "onFailure");
+            }
+
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    Gson gson = new Gson();
+                    ArrayList<Contributor> contributorsList = gson.fromJson(response.body().string(), new TypeToken<List<Contributor>>() {
+                    }.getType());
+                    for (Contributor contributor : contributorsList) {
+                        Log.d("login", contributor.getLogin());
+                        Log.d("contributions", contributor.getContributions() + "");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    private void buildRetrofitRequestInstanceWithConvert(){
+
+    }
 }
