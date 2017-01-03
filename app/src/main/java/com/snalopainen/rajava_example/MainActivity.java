@@ -25,6 +25,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
@@ -33,6 +35,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -59,7 +62,9 @@ public class MainActivity extends AppCompatActivity {
         //schedulerDisplayImageDrawable();
         // mapStudentsToNames();
         // mapStudentsToScores();
-        buildRetrofitRequestInstanceWithoutConvert();
+        //buildRetrofitRequestInstanceWithoutConvert();
+        //buildRetrofitRequestInstanceWithConvert();
+        buildRetrofitRequestInstanceWithRxjava();
     }
 
     @Override
@@ -313,7 +318,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private void buildRetrofitRequestInstanceWithConvert(){
+
+
+    private Retrofit buildRetrofitInstanceWithRxjava() {
+        return new Retrofit.Builder().baseUrl("https://api.github.com/").addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create()).build();
+    }
+
+    private CompositeSubscription mSubscriptions = new CompositeSubscription();
+
+    private void buildRetrofitRequestInstanceWithRxjava() {
+        GithubService_WithRxjava repo = buildRetrofitInstanceWithRxjava().create(GithubService_WithRxjava.class);
+        Observable<List<Contributor>> observable = repo.contributorsByRxJava("square", "retrofit");
+
+        mSubscriptions.add(observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<Contributor>>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(List<Contributor> contributors) {
+                        Log.d(TAG,"Rxjava");
+                        for (Contributor c : contributors) {
+                            Log.d("TAG", "login:" + c.getLogin() + "  contributions:" + c.getContributions());
+                        }
+                    }
+                }));
 
     }
+
+    private Retrofit buildRetrofitInstanceWithConvert() {
+        //@GET("repos/{owner}/{repo}/contributors")
+        return new Retrofit.Builder().baseUrl("https://api.github.com/").addConverterFactory(GsonConverterFactory.create()).build();
+    }
+
+    private void buildRetrofitRequestInstanceWithConvert() {
+        GithubService_withConvert repo = buildRetrofitInstanceWithConvert().create(GithubService_withConvert.class);
+        Call<List<Contributor>> call = repo.contributorsByAddConvertGetCall("square", "retrofit");
+        call.enqueue(new Callback<List<Contributor>>() {
+            @Override
+            public void onResponse(Call<List<Contributor>> call, Response<List<Contributor>> response) {
+                for (Contributor contributor : response.body()) {
+                    Log.d("login", contributor.getLogin());
+                    Log.d("contributions", contributor.getContributions() + "");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Contributor>> call, Throwable t) {
+
+            }
+        });
+    }
+
+
 }
