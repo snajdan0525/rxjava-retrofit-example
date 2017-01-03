@@ -22,8 +22,8 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class ScrollingActivity extends AppCompatActivity {
-    private static final String TAG = "ScrollingActivity";
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
