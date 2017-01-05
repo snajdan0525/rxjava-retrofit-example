@@ -1,4 +1,6 @@
-package com.snalopainen.rajava_example;
+package com.snalopainen.rajava_example.temp;
+
+import com.snalopainen.rajava_example.temp.Contributor;
 
 import java.util.List;
 

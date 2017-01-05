@@ -1,4 +1,4 @@
-package com.snalopainen.rajava_example;
+package com.snalopainen.rajava_example.temp;
 
 /**
  * Created by snajdan on 2017/1/1.

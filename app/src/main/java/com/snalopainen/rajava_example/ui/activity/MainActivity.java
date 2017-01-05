@@ -1,8 +1,7 @@
-package com.snalopainen.rajava_example;
+package com.snalopainen.rajava_example.ui.activity;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +14,12 @@ import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.snalopainen.rajava_example.R;
+import com.snalopainen.rajava_example.temp.Contributor;
+import com.snalopainen.rajava_example.temp.GithubService;
+import com.snalopainen.rajava_example.temp.GithubService_WithRxjava;
+import com.snalopainen.rajava_example.temp.GithubService_withConvert;
+import com.snalopainen.rajava_example.temp.Students;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +34,6 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Observer;
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -301,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d(TAG, "onFailure");
             }
-
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {

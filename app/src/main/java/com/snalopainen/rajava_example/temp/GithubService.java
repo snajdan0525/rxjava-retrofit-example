@@ -1,4 +1,4 @@
-package com.snalopainen.rajava_example;
+package com.snalopainen.rajava_example.temp;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
