@@ -10,21 +10,32 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.snalopainen.rajava_example.ExampleApplication;
 import com.snalopainen.rajava_example.R;
+import com.snalopainen.rajava_example.rest.model.WeatherResponse;
 import com.snalopainen.rajava_example.temp.Contributor;
 import com.snalopainen.rajava_example.temp.GithubService;
 import com.snalopainen.rajava_example.temp.GithubService_WithRxjava;
 import com.snalopainen.rajava_example.temp.GithubService_withConvert;
 import com.snalopainen.rajava_example.temp.Students;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,10 +55,38 @@ import rx.subscriptions.CompositeSubscription;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    @InjectView(R.id.activity_main_data)
+    protected RelativeLayout dataLayout;
+
+    @InjectView(R.id.activity_main_weather)
+    protected RelativeLayout weatherLayout;
+
+    @InjectView(R.id.activity_main_search_button)
+    protected TextView searchButton;
+
+    @InjectView(R.id.activity_main_search)
+    protected EditText searchEditText;
+
+    @InjectView(R.id.activity_main_sys_country_value)
+    protected TextView countryTextView;
+
+    @InjectView(R.id.activity_main_sys_sunrise_value)
+    protected TextView sunriseTextView;
+
+    @InjectView(R.id.activity_main_sys_sunset_value)
+    protected TextView sunsetTextView;
+
+    @InjectView(R.id.activity_main_weather_icon)
+    protected ImageView iconImageView;
+
+    @InjectView(R.id.activity_main_weather_text)
+    protected TextView weatherTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
+        ButterKnife.inject(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -69,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
         //buildRetrofitRequestInstanceWithoutConvert();
         //buildRetrofitRequestInstanceWithConvert();
         buildRetrofitRequestInstanceWithRxjava();
+        searchButton.setOnClickListener( new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onSearchClick();
+            }
+        });
     }
 
     @Override
@@ -305,6 +350,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d(TAG, "onFailure");
             }
+
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
@@ -348,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(List<Contributor> contributors) {
-                        Log.d(TAG,"Rxjava");
+                        Log.d(TAG, "Rxjava");
                         for (Contributor c : contributors) {
                             Log.d("TAG", "login:" + c.getLogin() + "  contributions:" + c.getContributions());
                         }
@@ -380,6 +426,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void onSearchClick() {
+        if (!searchEditText.getText().toString().equals("")) {
+            Observable<WeatherResponse> weaterQueryCall;
+            weaterQueryCall = ExampleApplication.getApiClient().getApiService().getWeather(searchEditText.getText().toString(), "c2471417eea029b90209d9813d7b55ca");
 
+            mSubscriptions.add(weaterQueryCall.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<WeatherResponse>() {
+                        @Override
+                        public void onCompleted() {
 
+                        }
+
+                        @Override
+                        public void onError(Throwable error) {
+                            Log.e(TAG, "Error : " + error.getMessage());
+                            searchEditText.setText("");
+                            dataLayout.setVisibility(View.GONE);
+                            weatherLayout.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onNext(WeatherResponse response) {
+                            //Log.d("TAG", "login:" + response.getLogin() + "  contributions:" + response.getContributions());
+                            final Date sunriseDate = new Date(response.getSys().getSunriseTime() * 1000);
+                            final Date sunsetDate = new Date(response.getSys().getSunsetTime() * 1000);
+                            final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh':'mm':'ss a");
+
+                            //getActionBar().setTitle(response.getStrCityName());
+                            countryTextView.setText(response.getSys().getStrCountry());
+
+                            if (!response.getWeather().isEmpty()) {
+                                Picasso.with(MainActivity.this).load("http://openweathermap.org/img/w/" + response.getWeather().get(0).getStrIconName() + ".png").into(iconImageView);
+                                weatherTextView.setText(response.getWeather().get(0).getStrDesc());
+                            }
+
+                            sunsetTextView.setText(simpleDateFormat.format(sunsetDate));
+                            sunriseTextView.setText(simpleDateFormat.format(sunriseDate));
+
+                            searchEditText.setText("");
+                            Log.e(TAG, "City name : " + response.getStrCityName());
+                            dataLayout.setVisibility(View.VISIBLE);
+                            weatherLayout.setVisibility(View.VISIBLE);
+                        }
+                    }));
+        }
+    }
 }

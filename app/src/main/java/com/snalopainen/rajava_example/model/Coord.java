@@ -2,21 +2,20 @@ package com.snalopainen.rajava_example.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.parceler.Parcel;
 
-
+/**
+ * Author :    snalopainen
+ * Date :      10/2/2014
+ */
+@Parcel
 public class Coord
 {
+    @SerializedName("lon")
     private Double longitude;
 
+    @SerializedName("lat")
     private Double latitude;
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
 
     public Double getLongitude()
     {

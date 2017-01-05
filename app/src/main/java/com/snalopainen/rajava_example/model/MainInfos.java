@@ -2,38 +2,28 @@ package com.snalopainen.rajava_example.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.parceler.Parcel;
 
-
+/**
+ * Author :    Chutaux Robin
+ * Date :      10/2/2014
+ */
+@Parcel
 public class MainInfos
 {
+    @SerializedName("temp")
     private Double temp;
 
+    @SerializedName("pressure")
     private Double pressure;
 
+    @SerializedName("humidity")
     private Double humidity;
 
+    @SerializedName("temp_min")
     private Double tempMin;
 
-    public void setTemp(Double temp) {
-        this.temp = temp;
-    }
-
-    public void setPressure(Double pressure) {
-        this.pressure = pressure;
-    }
-
-    public void setHumidity(Double humidity) {
-        this.humidity = humidity;
-    }
-
-    public void setTempMin(Double tempMin) {
-        this.tempMin = tempMin;
-    }
-
-    public void setTempMax(Double tempMax) {
-        this.tempMax = tempMax;
-    }
-
+    @SerializedName("temp_max")
     private Double tempMax;
 
     public Double getTemp()
